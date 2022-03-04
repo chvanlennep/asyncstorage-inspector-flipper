@@ -1,0 +1,19 @@
+{
+  "lib": ["es2018"],
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "rules": {
+    "ordered-imports": [false],
+    "object-literal-sort-keys": [false]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/__tests__/*"]
+}
