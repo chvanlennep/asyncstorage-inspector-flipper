@@ -5,10 +5,8 @@
     "module": "commonjs",
     "declaration": true,
     "outDir": "./dist",
-    "strict": false,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
+    "strict": true,
+    "esModuleInterop": true
   },
   "rules": {
     "ordered-imports": [false],

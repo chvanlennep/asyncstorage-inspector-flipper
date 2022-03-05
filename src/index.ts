@@ -1,52 +1,66 @@
-import { DevSettings } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { addPlugin } from "react-native-flipper";
+//@ts-ignore
+import {DevSettings} from 'react-native';
+import {addPlugin} from 'react-native-flipper';
 
 let currentConnection: any = null;
 
-if (__DEV__ && (!AsyncStorage || !addPlugin)) {
+//@ts-ignore
+if (__DEV__ && !addPlugin) {
   throw new Error(
-    "Please make sure AsyncStorage and react-native-flipper are installed before using asyncstorage-inspector-flipper",
+    'Please make sure react-native-flipper is installed before using asyncstorage-inspector-flipper',
   );
 }
 
-export const initAsyncStorageInspector = () => {
-  if (!__DEV__) {
+export const initAsyncStorageInspector = (AsyncStorage: any) => {
+  //@ts-ignore
+  if (!__DEV__ || currentConnection) {
     return;
   }
-  if (currentConnection === null) {
-    addPlugin({
-      getId: () => "asyncstorage-inspector-flipper",
-      onConnect(connection: any) {
-        currentConnection = connection;
-        try {
-          connection.send("init", {
-            middlewareActive: true,
-          });
-          connection.receive("clearStorage", async () => {
-            try {
-              const persistedStorageKeys: string[] = await AsyncStorage.getAllKeys();
-              await AsyncStorage.multiRemove(persistedStorageKeys);
-              DevSettings.reload();
-            } catch (error) {
-              console.warn(error);
-            }
-          });
-          connection.receive("contentRequest", async () => {
-            try {
-              const persistedStorageKeys: string[] = await AsyncStorage.getAllKeys();
-              const content = await AsyncStorage.multiGet(persistedStorageKeys);
-              connection.send("content", { content });
-            } catch (error) {
-              console.warn(error);
-            }
-          });
-        } catch (error) {
-          console.warn(error);
-        }
-      },
-      onDisconnect() {},
-      runInBackground: () => false,
-    });
+  if (!AsyncStorage?.getAllKeys) {
+    throw new Error('No instance on AsyncStorage found');
   }
+
+  addPlugin({
+    getId() {
+      return 'asyncstorage-inspector-flipper';
+    },
+    onConnect(connection) {
+      currentConnection = connection;
+      try {
+        AsyncStorage.getAllKeys()
+          .then((persistedStorageKeys: string[]) => {
+            AsyncStorage.multiGet(persistedStorageKeys)
+              .then((content: [string, string | null][]) => {
+                connection.send('content', {content});
+              })
+              .catch(console.warn);
+          })
+          .catch(console.warn);
+        connection.receive('contentRequest', async () => {
+          try {
+            const persistedStorageKeys: string[] = await AsyncStorage.getAllKeys();
+            const content = await AsyncStorage.multiGet(persistedStorageKeys);
+            connection.send('content', {content});
+          } catch (error) {
+            console.warn(error);
+          }
+        });
+        connection.receive('clearStorage', async () => {
+          try {
+            const persistedStorageKeys: string[] = await AsyncStorage.getAllKeys();
+            await AsyncStorage.multiRemove(persistedStorageKeys);
+            DevSettings.reload();
+          } catch (error) {
+            console.warn(error);
+          }
+        });
+      } catch (error) {
+        console.warn(error);
+      }
+    },
+    onDisconnect() {},
+    runInBackground() {
+      return true;
+    },
+  });
 };
