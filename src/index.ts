@@ -1,5 +1,7 @@
 //@ts-ignore
 import {DevSettings} from 'react-native';
+//@ts-ignore
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {addPlugin} from 'react-native-flipper';
 
 let currentConnection: any = null;
@@ -11,13 +13,15 @@ if (__DEV__ && !addPlugin) {
   );
 }
 
-export const initAsyncStorageInspector = (AsyncStorage: any) => {
+export const initAsyncStorageInspector = () => {
   //@ts-ignore
   if (!__DEV__ || currentConnection) {
     return;
   }
   if (!AsyncStorage?.getAllKeys) {
-    throw new Error('No instance on AsyncStorage found');
+    throw new Error(
+      'Please make sure Asyncstorage is installed before using asyncstorage-inspector-flipper',
+    );
   }
 
   addPlugin({
