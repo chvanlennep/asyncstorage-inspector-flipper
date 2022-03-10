@@ -5,7 +5,7 @@ Middleware for inspecting contents of React Native AsyncStorage in Flipper
 ## Installation
 
 ```bash
-yarn add async-storage-inspector-flipper react-native-flipper
+yarn add asyncstorage-inspector-flipper react-native-flipper
 # for iOS
 cd ios && pod install
 ```
